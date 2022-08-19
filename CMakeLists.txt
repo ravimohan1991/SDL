@@ -12,16 +12,41 @@ set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 23)
 set(SDL_MICRO_VERSION 2)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
-# Calculate a libtool-like version number
-#math(EXPR SDL_BINARY_AGE "${SDL_MINOR_VERSION} * 100 + ${SDL_MICRO_VERSION}")
-#if(SDL_MINOR_VERSION MATCHES "[02468]$")
-    # Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
-#    set(SDL_INTERFACE_AGE ${SDL_MICRO_VERSION})
-#else()
-    # Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
-#    set(SDL_INTERFACE_AGE 0)
-#endif()
 
+# Calculate a libtool-like version number
+math(EXPR SDL_BINARY_AGE "${SDL_MINOR_VERSION} * 100 + ${SDL_MICRO_VERSION}")
+if(SDL_MINOR_VERSION MATCHES "[02468]$")
+    # Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
+    set(SDL_INTERFACE_AGE ${SDL_MICRO_VERSION})
+else()
+    # Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
+    set(SDL_INTERFACE_AGE 0)
+endif()
+
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+set(LT_MAJOR "0")
+
+math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
+math(EXPR LT_CURRENT "${LT_MAJOR} + ${LT_AGE}")
+set(LT_REVISION "${SDL_INTERFACE_AGE}")
+# For historical reasons, the library name redundantly includes the major
+# version twice: libSDL2-2.0.so.0.
+# TODO: in SDL 3, set the OUTPUT_NAME to plain SDL3, which will simplify
+# it to libSDL3.so.0
+set(LT_RELEASE "2.0")
+set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
+
+# The following should match the versions in the Xcode project file.
+# Each version is 1 higher than you might expect, for compatibility
+# with libtool: macOS ABI versioning is 1-based, unlike other platforms
+# which are normally 0-based.
+math(EXPR DYLIB_CURRENT_VERSION_MAJOR "${LT_MAJOR} + ${LT_AGE} + 1")
+math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
+math(EXPR DYLIB_COMPAT_VERSION_MAJOR "${LT_MAJOR} + 1")
+set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
+set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_COMPAT_VERSION_MAJOR}.0.0")
 
 # This is a virtual "library" that just exists to collect up compiler and
 #  linker options that used to be global to this CMake project. When you
