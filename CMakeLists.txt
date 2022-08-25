@@ -2799,7 +2799,7 @@ endif()
 #  target_compile_options(sdl-build-options INTERFACE "-Wno-error=declaration-after-statement")
 #endif()
 
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS AND NOT MSVC)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES} ${SDL2_INCLUDE_FILES})
   add_dependencies(SDL2 sdl_headers_copy)
   # alias target for in-tree builds
@@ -2859,7 +2859,7 @@ if(BUILD_SHARED_LIBS)
   set_property(TARGET SDL2 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL2_SHARED)
 endif()
 
-if(NOT BUILD_SHARED_LIBS)
+if(NOT BUILD_SHARED_LIBS OR MSVC)
   add_library(SDL2-static STATIC ${SOURCE_FILES} ${SDL2_INCLUDE_FILES})
   #add_dependencies(SDL2-static sdl_headers_copy)
   # alias target for in-tree builds
